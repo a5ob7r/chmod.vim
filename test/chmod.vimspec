@@ -1,0 +1,116 @@
+let s:helper = themis#helper('assert')
+
+Describe Chmod
+  Before all
+    let l:file = tempname()
+    execute printf('redir > %s', l:file)
+  End
+
+  After all
+    call delete(l:file)
+  End
+
+  Describe :Chmod
+    It makes a file readable by the owner
+      call setfperm(l:file, '---------')
+
+      call s:helper.equals(getfperm(l:file), '---------')
+
+      execute printf('Chmod u+r %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), 'r--------')
+    End
+
+    It makes a file writable by the owner
+      call setfperm(l:file, '---------')
+
+      call s:helper.equals(getfperm(l:file), '---------')
+
+      execute printf('Chmod u+w %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), '-w-------')
+    End
+
+    It makes a file executable by the owner
+      call setfperm(l:file, '---------')
+
+      call s:helper.equals(getfperm(l:file), '---------')
+
+      execute printf('Chmod u+x %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), '--x------')
+    End
+
+    It makes a file unreadable by the owner
+      call setfperm(l:file, 'rwx------')
+
+      call s:helper.equals(getfperm(l:file), 'rwx------')
+
+      execute printf('Chmod u-r %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), '-wx------')
+    End
+
+    It makes a file unwritable by the owner
+      call setfperm(l:file, 'rwx------')
+
+      call s:helper.equals(getfperm(l:file), 'rwx------')
+
+      execute printf('Chmod u-w %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), 'r-x------')
+    End
+
+    It makes a file unexecutable by the owner
+      call setfperm(l:file, 'rwx------')
+
+      call s:helper.equals(getfperm(l:file), 'rwx------')
+
+      execute printf('Chmod u-x %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), 'rw-------')
+    End
+
+    It makes a file only readable by all classes, but also writable by only the group
+      call setfperm(l:file, '---------')
+
+      call s:helper.equals(getfperm(l:file), '---------')
+
+      execute printf('Chmod a=r,g+w %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), 'r--rw-r--')
+    End
+
+    It makes a file readable and executable by the owner and the group
+      call setfperm(l:file, '---------')
+
+      call s:helper.equals(getfperm(l:file), '---------')
+
+      execute printf('Chmod ug=rx %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), 'r-xr-x---')
+    End
+
+    It makes a file executable by all classes if no class specification
+      call setfperm(l:file, '---------')
+
+      call s:helper.equals(getfperm(l:file), '---------')
+
+      execute printf('Chmod +x %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), '--x--x--x')
+    End
+
+    It removes all permission by the group if no perms after an equal operator
+      call setfperm(l:file, '---rwx---')
+
+      call s:helper.equals(getfperm(l:file), '---rwx---')
+
+      execute printf('Chmod g= %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), '---------')
+    End
+  End
+End
+
+" vim: set expandtab tabstop=2 shiftwidth=2:
