@@ -2,6 +2,12 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 " TODO: Accept octal formats.
+" TODO: Add "X" as a valid letter to select file mode bits.
+" TODO: Add "ugo" as valid letters to refer the permissions of classes.
+" TODO: Apply dereferenced files instead of symbolic links themselve.
+" TODO: Return objects to indicate the invocation results.
+" TODO: Add some extra options impletemnted by GNU coreutils chmod.
+" TODO: Improve compatibility with GNU coreutils chmod's argument parsing.
 function! chmod#call(...) abort
   let l:idx = index(a:000, '--')
   let l:flags =
