@@ -14,7 +14,7 @@ function! chmod#call(...) abort
     \   l:idx > 0 ? a:000[: l:idx - 1]
     \ : l:idx == 0 ? []
     \ : a:000
-  let l:args = l:idx >= 0 ? a:000[l:idx + 1 :] : []
+  let l:operands = l:idx >= 0 ? a:000[l:idx + 1 :] : []
 
   let l:modes = []
   let l:files = []
@@ -37,7 +37,7 @@ function! chmod#call(...) abort
     endif
   endfor
 
-  let l:files += l:args
+  let l:files += l:operands
 
   if empty(l:files)
     throw 'chmod#call: Missing filename.'
