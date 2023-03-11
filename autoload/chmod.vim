@@ -46,7 +46,6 @@ endfunction
 " TODO: Accept octal formats.
 " TODO: Add "ugo" as valid letters to refer the permissions of classes.
 " TODO: Apply dereferenced files instead of symbolic links themselve.
-" TODO: Return objects to indicate the invocation results.
 " TODO: Add some extra options impletemnted by GNU coreutils chmod.
 " TODO: Improve compatibility with GNU coreutils chmod's argument parsing.
 function! chmod#call(...) abort
@@ -89,16 +88,31 @@ function! chmod#call(...) abort
   endif
 
   let l:results = []
+  let l:exitcode = 0
 
   for l:file in l:files
-    let l:perms = s:mode2bits(getfperm(l:file))
+    let l:fperm = getfperm(l:file)
+    let l:perms = empty(l:fperm) ? -1 : s:mode2bits(l:fperm)
     let l:results += [{
       \ 'filename': l:file,
-      \ 'oldperms': l:perms,
-      \ 'newperms': l:perms,
+      \ 'original': l:perms,
+      \ 'expected': l:perms,
+      \ 'actual': '',
       \ 'success': 0,
       \ 'isdirectory': isdirectory(l:file)
       \ }]
+
+    if !empty(l:fperm)
+      continue
+    endif
+
+    if empty(glob(l:file))
+      echo printf("chmod#call(): Cannot access '%s': No such file or directory", l:file)
+      let l:exitcode = l:exitcode || 1
+    else
+      echo printf("chmod#call(): Changing permissions of '%s': Operation not permitted", l:file)
+      let l:exitcode = l:exitcode || 1
+    endif
   endfor
 
   for l:mode in split(l:modes[0], ',')
@@ -123,30 +137,51 @@ function! chmod#call(...) abort
     let l:basebits = (l:perms =~# 'r') * 4 + (l:perms =~# 'w') * 2 + (l:perms =~# 'x') * 1
 
     for l:result in l:results
-      let l:bits = or(l:basebits, (l:perms =~# 'X' && (l:result['isdirectory'] || and(l:result['newperms'], 0111))) * 1)
+      if l:result['original'] < 0
+        continue
+      endif
+
+      let l:bits = or(l:basebits, (l:perms =~# 'X' && (l:result['isdirectory'] || and(l:result['expected'], 0111))) * 1)
       let l:b = s:or(map(deepcopy(l:offsets), 's:lshift(l:bits, v:val)'))
 
-      let l:result['newperms'] =
-        \   l:operator ==# '-' ? and(l:result['newperms'], invert(and(l:result['newperms'], l:b)))
-        \ : l:operator ==# '+' ? or(l:result['newperms'], l:b)
+      let l:result['expected'] =
+        \   l:operator ==# '-' ? and(l:result['expected'], invert(and(l:result['expected'], l:b)))
+        \ : l:operator ==# '+' ? or(l:result['expected'], l:b)
         \ : l:b
     endfor
   endfor
 
   for l:result in l:results
-    if l:result['oldperms'] ==# l:result['newperms']
+    if l:result['original'] < 0
       if l:verbose >= 2
-        echo printf("mode of '%s' retained as %04o (%s)", l:result['filename'], l:result['oldperms'], s:bits2mode(l:result['newperms']))
+        echo printf("'%s' could not be accessed", l:result['filename'])
+      endif
+    elseif l:result['original'] ==# l:result['expected']
+      let l:result['actual'] = l:result['original']
+      let l:result['success'] = 1
+
+      if l:verbose >= 2
+        echo printf("mode of '%s' retained as %04o (%s)", l:result['filename'], l:result['original'], s:bits2mode(l:result['expected']))
       endif
     else
       " A function "setfperm()" was introduced by "patch-7.4.1516".
-      call setfperm(l:result['filename'], s:bits2mode(l:result['newperms']))
+      call setfperm(l:result['filename'], s:bits2mode(l:result['expected']))
+
+      let l:result['actual'] = getfperm(l:result['filename'])
+      let l:result['success'] = l:result['expected'] == s:mode2bits(l:result['actual'])
 
       if l:verbose >= 1
-        echo printf("mode of '%s' changed from %04o (%s) to %04o (%s)", l:result['filename'], l:result['oldperms'], s:bits2mode(l:result['oldperms']), l:result['newperms'], s:bits2mode(l:result['newperms']))
+        echo printf("mode of '%s' changed from %04o (%s) to %04o (%s)", l:result['filename'], l:result['original'], s:bits2mode(l:result['original']), l:result['actual'], s:bits2mode(l:result['actual']))
       endif
     endif
+
+    let l:result['original'] = l:result['original'] < 0 ? '' : s:bits2mode(l:result['original'])
+    let l:result['expected'] = l:result['expected'] < 0 ? '' : s:bits2mode(l:result['expected'])
+
+    let l:exitcode = l:exitcode || !l:result['success']
   endfor
+
+  return { 'exitcode': l:exitcode, 'results': l:results }
 endfunction
 
 let &cpo = s:save_cpo
