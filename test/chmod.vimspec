@@ -130,6 +130,36 @@ Describe :Chmod
 
       call s:helper.equals(getfperm(l:file), '---rw----')
     End
+
+    It add the same bits for group class to user class
+      call setfperm(l:file, '---rw----')
+
+      call s:helper.equals(getfperm(l:file), '---rw----')
+
+      execute printf('Chmod u+g %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), 'rw-rw----')
+    End
+
+    It add the same bits for other class to group class
+      call setfperm(l:file, '------rw-')
+
+      call s:helper.equals(getfperm(l:file), '------rw-')
+
+      execute printf('Chmod g+o %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), '---rw-rw-')
+    End
+
+    It add the same bits for user class to other class
+      call setfperm(l:file, 'rw-------')
+
+      call s:helper.equals(getfperm(l:file), 'rw-------')
+
+      execute printf('Chmod o+u %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), 'rw----rw-')
+    End
   End
 
   Describe For single directory

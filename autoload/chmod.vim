@@ -1,6 +1,12 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+" A backward compatible function version of the ">>" operator. The operator is
+" introduced by "patch-8.2.5003".
+function! s:rshift(bits, n) abort
+  return a:n > 0 ? a:bits / float2nr(pow(2, a:n)) : a:bits
+endfunction
+
 " A backward compatible function version of the "<<" operator. The operator is
 " introduced by "patch-8.2.5003".
 function! s:lshift(bits, n) abort
@@ -44,7 +50,6 @@ function! s:bits2mode(bits) abort
 endfunction
 
 " TODO: Accept octal formats.
-" TODO: Add "ugo" as valid letters to refer the permissions of classes.
 " TODO: Apply dereferenced files instead of symbolic links themselve.
 " TODO: Add some extra options impletemnted by GNU coreutils chmod.
 " TODO: Improve compatibility with GNU coreutils chmod's argument parsing.
@@ -61,7 +66,7 @@ function! chmod#call(...) abort
   let l:verbose = 0
   let l:maybefiles = []
 
-  let l:modefmtreg = '[ugoa]*[-+=][rwxX]*'
+  let l:modefmtreg = '[ugoa]*[-+=]\%([rwxX]*\|[ugo]\)'
 
   for l:flag in l:flags
     if l:flag =~# '^\%(-c\|--changes\)$'
@@ -141,8 +146,17 @@ function! chmod#call(...) abort
         continue
       endif
 
-      let l:bits = or(l:basebits, (l:perms =~# 'X' && (l:result['isdirectory'] || and(l:result['expected'], 0111))) * 1)
+      let l:bits = s:or([
+        \ l:basebits,
+        \ (l:perms =~# 'X' && (l:result['isdirectory'] || and(l:result['expected'], 0111))) * 1,
+        \ l:perms ==# 'u' ? s:rshift(and(l:result['expected'], 0700), 6) : 0,
+        \ l:perms ==# 'g' ? s:rshift(and(l:result['expected'], 0070), 3) : 0,
+        \ l:perms ==# 'o' ? s:rshift(and(l:result['expected'], 0007), 0) : 0,
+        \ ])
       let l:b = s:or(map(deepcopy(l:offsets), 's:lshift(l:bits, v:val)'))
+
+      echo l:perms
+      echo printf('%04o', l:bits)
 
       let l:result['expected'] =
         \   l:operator ==# '-' ? and(l:result['expected'], invert(and(l:result['expected'], l:b)))
