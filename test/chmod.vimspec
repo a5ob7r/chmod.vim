@@ -1,16 +1,16 @@
 let s:helper = themis#helper('assert')
 
-Describe Chmod
-  Before all
-    let l:file = tempname()
-    execute printf('redir > %s', l:file)
-  End
+Describe :Chmod
+  Describe For single file
+    Before all
+      let l:file = tempname()
+      execute printf('redir > %s', l:file)
+    End
 
-  After all
-    call delete(l:file)
-  End
+    After all
+      call delete(l:file)
+    End
 
-  Describe :Chmod
     It makes a file readable by the owner
       call setfperm(l:file, '---------')
 
@@ -109,6 +109,47 @@ Describe Chmod
       execute printf('Chmod g= %s', l:file)
 
       call s:helper.equals(getfperm(l:file), '---------')
+    End
+
+    It add a execution bit if the target has a execution bit for some user
+      call setfperm(l:file, '---rwx---')
+
+      call s:helper.equals(getfperm(l:file), '---rwx---')
+
+      execute printf('Chmod u+X %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), '--xrwx---')
+    End
+
+    It doesn't add a execution bit if the target has no execution bit for all users
+      call setfperm(l:file, '---rw----')
+
+      call s:helper.equals(getfperm(l:file), '---rw----')
+
+      execute printf('Chmod u+X %s', l:file)
+
+      call s:helper.equals(getfperm(l:file), '---rw----')
+    End
+  End
+
+  Describe For single directory
+    Before all
+      let l:dir = tempname()
+      call mkdir(l:dir)
+    End
+
+    After all
+      call delete(l:dir, 'd')
+    End
+
+    It add a execution bit if the target is a directory
+      call setfperm(l:dir, '---------')
+
+      call s:helper.equals(getfperm(l:dir), '---------')
+
+      execute printf('Chmod u+X %s', l:dir)
+
+      call s:helper.equals(getfperm(l:dir), '--x------')
     End
   End
 End
