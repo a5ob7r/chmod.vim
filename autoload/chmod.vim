@@ -1,5 +1,5 @@
-let s:save_cpo = &cpo
-set cpo&vim
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
 " A backward compatible function version of the ">>" operator. The operator is
 " introduced by "patch-8.2.5003".
@@ -195,7 +195,7 @@ function! chmod#call(...) abort
   return { 'exitcode': l:exitcode, 'results': l:results }
 endfunction
 
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet s:save_cpo
 
 " vim: set expandtab tabstop=2 shiftwidth=2:

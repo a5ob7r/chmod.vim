@@ -4,8 +4,8 @@ endif
 
 let g:loaded_chmod = 1
 
-let s:save_cpo = &cpo
-set cpo&vim
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
 " "Chmod()" is a function similar to "chmod(1)" for "setfperm()".
 function! Chmod(...) abort
@@ -21,7 +21,7 @@ endfunction
 " :Chmod --verbose +x %
 command! -bar -nargs=+ -complete=file Chmod call chmod#call(<f-args>)
 
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet s:save_cpo
 
 " vim: set expandtab tabstop=2 shiftwidth=2:
