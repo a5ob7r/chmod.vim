@@ -1,5 +1,7 @@
 # chmod.vim
 
+[![CI](https://github.com/a5ob7r/chmod.vim/actions/workflows/ci.yml/badge.svg)](https://github.com/a5ob7r/chmod.vim/actions/workflows/ci.yml)
+
 This plugin provides the `:Chmod` command and the `Chmod()` function.
 The two of them are interfaces of `setfperm()` and allow to specify filemodes using formats of `chmod(1)`, especially `chmod` of GNU Coreutils.
 
