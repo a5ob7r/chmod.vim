@@ -184,4 +184,86 @@ Describe :Chmod
   End
 End
 
+Describe Chmod()
+  Describe For single file
+    Before all
+      let l:file = tempname()
+      execute printf('redir > %s', l:file)
+    End
+
+    After all
+      call delete(l:file)
+    End
+
+    It returns a dictionary has 0 as the exitcode attribute if the invocation succeeded
+      let l:dict = Chmod('u+r', l:file)
+
+      call s:helper.equals(l:dict['exitcode'], 0)
+    End
+
+    It returns a dictionary has invocation result list as the results attribute if it took single filename and the modification succeeded
+      call setfperm(l:file, '---------')
+
+      call s:helper.equals(getfperm(l:file), '---------')
+
+      let l:dict = Chmod('u+r', l:file)
+
+      call s:helper.equals(len(l:dict['results']), 1)
+      call s:helper.equals(l:dict['results'][0]['filename'], l:file)
+      call s:helper.equals(l:dict['results'][0]['original'], '---------')
+      call s:helper.equals(l:dict['results'][0]['expected'], 'r--------')
+      call s:helper.equals(l:dict['results'][0]['actual'], 'r--------')
+      call s:helper.equals(l:dict['results'][0]['success'], 1)
+      call s:helper.equals(l:dict['results'][0]['isdirectory'], 0)
+    End
+  End
+
+  Describe For a missing file
+    It returns a dictionary has 1 as the exitcode attribute if the invocation failed
+      let l:dict = Chmod('u+r', 'missing_file')
+
+      call s:helper.equals(l:dict['exitcode'], 1)
+    End
+
+    It returns a dictionary has invocation result list as the results attribute if it took single filename
+      let l:dict = Chmod('u+r', 'missing_file')
+
+      call s:helper.equals(len(l:dict['results']), 1)
+      call s:helper.equals(l:dict['results'][0]['filename'],  'missing_file')
+      call s:helper.equals(l:dict['results'][0]['original'], '')
+      call s:helper.equals(l:dict['results'][0]['expected'], '')
+      call s:helper.equals(l:dict['results'][0]['actual'], '')
+      call s:helper.equals(l:dict['results'][0]['success'], 0)
+      call s:helper.equals(l:dict['results'][0]['isdirectory'], 0)
+    End
+  End
+
+  Describe For single directory
+    Before all
+      let l:dir = tempname()
+      call mkdir(l:dir)
+    End
+
+    After all
+      call delete(l:dir, 'd')
+    End
+
+    It returns a dictionary has invocation result list as the results attribute if it took single dirname
+      call setfperm(l:dir, '---------')
+
+      call s:helper.equals(getfperm(l:dir), '---------')
+
+      let l:dict = Chmod('u+X', l:dir)
+
+      call s:helper.equals(len(l:dict['results']), 1)
+      call s:helper.equals(l:dict['results'][0]['filename'], l:dir)
+      call s:helper.equals(l:dict['results'][0]['original'], '---------')
+      call s:helper.equals(l:dict['results'][0]['expected'], '--x------')
+      call s:helper.equals(l:dict['results'][0]['actual'], '--x------')
+      call s:helper.equals(l:dict['results'][0]['success'], 1)
+      call s:helper.equals(l:dict['results'][0]['isdirectory'], 1)
+    End
+  End
+End
+
 " vim: set expandtab tabstop=2 shiftwidth=2:

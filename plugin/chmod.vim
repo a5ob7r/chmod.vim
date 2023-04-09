@@ -9,7 +9,7 @@ set cpo&vim
 
 " "Chmod()" is a function similar to "chmod(1)" for "setfperm()".
 function! Chmod(...) abort
-  call call('chmod#call', a:000)
+  return call('chmod#call', a:000)
 endfunction
 
 " ":Chmod" is a command-line interface similar to "chmod(1)" for "setfperm()".
