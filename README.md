@@ -7,6 +7,10 @@ The two of them are interfaces of `setfperm()` and allow to specify filemodes us
 :Chmod +x %
 ```
 
+## Requirements
+
+- Vim 7.4.1516+
+
 ## Why?
 
 Vim has a function, `setfperm()`, to modify file permissions, but we've to specify the new file permissions by a string with 9 characters such as `'rwxrwxrwx'` or `'rwx-w---x'`.
