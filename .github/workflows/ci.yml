@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        version:
+          - v7.4.1516
+          - v9.0.0000
+        exclude:
+          # Building Vim older than 8.2.1119 on macOS needs Xcode11.
+          - os: macos-latest
+            version: v7.4.1516
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/checkout@v3
+        with:
+          repository: thinca/vim-themis
+          path: vim-themis
+
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          version: ${{ matrix.version }}
+
+      - name: Run test
+        run: ./vim-themis/bin/themis test/chmod.vimspec
