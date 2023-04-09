@@ -155,9 +155,6 @@ function! chmod#call(...) abort
         \ ])
       let l:b = s:or(map(deepcopy(l:offsets), 's:lshift(l:bits, v:val)'))
 
-      echo l:perms
-      echo printf('%04o', l:bits)
-
       let l:result['expected'] =
         \   l:operator ==# '-' ? and(l:result['expected'], invert(and(l:result['expected'], l:b)))
         \ : l:operator ==# '+' ? or(l:result['expected'], l:b)
