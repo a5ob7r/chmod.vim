@@ -1,5 +1,98 @@
 *chmod.txt*	User friendly interfaces for setfperm()
 
 ==============================================================================
+USAGE								*chmod-usage*
+>
+If you want to use a command interface,
+>
+	:Chmod +x %
+	:Chmod u+x,g=u,o-rw % /path/to/file
+<
+Or if you want to use a function interface,
 
+>
+	call Chmod('+x', '/path/to/file'w)
+	call Chmod('u+x,g=u,o-rw', '/path/to/file1', '/path/to/file2')
+<
+
+==============================================================================
+COMMAND							*chmod-command*
+
+							*:Chmod*
+:Chmod [{OPTIONS}] MODE{,MODE}... [FILES]
+	A command interface for `setfperm()`.
+
+	The following {OPTIONS} are available.
+
+	-c	or 	--changes
+		Show messages about filemode changed files by the operation.
+		So `:Chmod` doesn't show any messages if no filemode change
+		even if this option is on.
+
+	-v	or	--verbose
+		Show messages about all of targeted files by the operation
+		regardless of whether any filemode changes happened or not.
+
+	The MODE is filemode specification for `:Chmod`. We can specify
+	multiple filemode specifications separated by comma. The MODE format
+	is the same as |chmod(1p)|, which is POSIX specification for chmod.
+	However `:Chmod` doesn't allow 's' and 't' as perms because Vim can't
+	handle set-user-ID, set-group-ID and sticky bit. We have to provide
+	some mode specification in advance of [FILES], if not so, `:Chmod`
+	throws an error.
+
+	[FILES] are target filenames. We have to provide one filename at
+	least, if not so, `:Chmod` throws an error.
+
+==============================================================================
+FUNCTION						*chmod-function*
+
+							*Chmod()*
+Chmod([{args}])
+	A function interface for `setfperm()`.
+
+	`Chmod()` accepts multiple |String|s as the arguments. The
+	interpretation is the same as `:Chmod`. See |:Chmod|.
+
+	`Chmod()` returns a dictionary to indicate the invocation result.
+
+	The dictionary has following attributes.
+
+	exitcode
+		A |Number| to indicate the status code for the `Chmod()`
+		invocation. The value's context is UNIX command line, but not
+		Vim. So the value is 0 if there is no error, otherwise 1.
+
+	results
+		A |List|, which contains dictionaries to indicate filemode
+		modification result for each target files.
+
+	The aforementioned directory to indicate filemode modification
+	has following attributes.
+
+	filename
+		A |String| of target filename (or filepath).
+
+	original
+		A |String| of the original filemode for the target file. The
+		format is the same as the result of |getfperm()|.
+
+	expected
+		A |String| of the expected filemode for the filemode
+		modification for the target file. The format is the same as
+		the result of |getfperm()|.
+
+	actual
+		A |String| of the actual filemode for the filemode
+		modification for the target file. The format is the same as
+		the result of |getfperm()|.
+
+	success
+		A |Number| that whether the filemode modification for the
+		target file was success or not.
+
+	isdirectory
+		A |Number| that whether the target file is a directory or not.
+
+==============================================================================
 vim:tw=78:ts=8:noet:ft=help:norl:
