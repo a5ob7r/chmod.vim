@@ -30,6 +30,10 @@ This is a very very personal request, maybe anyone doesn't want it, but just I w
 
 In conclusion, this is juat my hobby!
 
+## Installation
+
+Use your favorite plugin manager, or use `:packadd` if you are a Vim8 user.
+
 ## Test
 
 This plugin is tested using [themis.vim](https://github.com/thinca/vim-themis).
