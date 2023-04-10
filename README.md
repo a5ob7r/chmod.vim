@@ -16,7 +16,7 @@ The two of them are interfaces of `setfperm()` and allow to specify filemodes us
 ## Why?
 
 Vim has a function, `setfperm()`, to modify file permissions, but we've to specify the new file permissions by a string with 9 characters such as `'rwxrwxrwx'` or `'rwx-w---x'`.
-Such a format is human-raedable, but this is bothering us when we want to specify file permissions.
+Such a format is human-readable, but this is bothering us when we want to specify file permissions.
 
 Please imagine such a situation that you're writing a script and want to make it executable.
 So you need to set executable bits for some classes (owner, group, others, or all?).
@@ -30,7 +30,7 @@ Of course I know we can call external commands such as it from Vim using `:!{cmd
 
 This is a very very personal request, maybe anyone doesn't want it, but just I want it.
 
-In conclusion, this is juat my hobby!
+In conclusion, this is just my hobby!
 
 ## Installation
 
